@@ -14,33 +14,30 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
   <ui:composition>
   	
-    <div id="menuDiv_#{fileInfo.valueId}"  style="visibility:hidden;" class="popupMenu">
+    <div id="menuDiv_#{uploadDir.name}_#{aFile.filename}"  style="visibility:hidden;" class="popupMenu">
       <table>
         <tbody>
           <tr>
             <td>
-              <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file?');" actionListener="#{jobsBean.deleteFile}" immediate="true"
-                             rendered="#{jobInfo.deleteAllowed}">
-                <f:param value="#{fileInfo.value}" name="jobFile"/>
+              <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" 
+              		actionListener="#{uploadedFilesBean.deleteFile}" immediate="true" >
+                <f:param value="#{aFile.filename}" name="filename"/>
+                <f:param value="#{aFile.path}" name="path"/>
+                <f:param value="#{uploadDir.name}" name="dirname"/>           
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Save" actionListener="#{jobsBean.saveFile}" immediate="true">
-                <f:param value="#{fileInfo.value}" name="jobFileName"/>
+              <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFileLocally}" immediate="true">
+                <f:param value="#{aFile.filename}" name="filename"/>
+                   <f:param value="#{aFile.path}" name="path"/>
+               <f:param value="#{uploadDir.name}" name="dirname"/>
               </h:commandLink>
             </td>
           </tr>
-          <tr>
-            <td>
-              <h:commandLink value="Create Pipeline" actionListener="#{jobsBean.createPipeline}" immediate="true">
-                <f:param value="#{fileInfo.jobNumber}" name="jobNumber"/>
-              </h:commandLink>
-            </td>
-          </tr>
-          
-          <!--  GENOMESPACE ADDITION  -->
+        
+        
           <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
        
              <tr>
@@ -50,50 +47,58 @@
           	</tr>
           	 <tr>
            	 <td><img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />
-              &#160;<h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendToGenomeSpace}" immediate="true">
-                <f:param value="#{fileInfo.value}" name="jobFileName"/>
+              &#160;<h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendInputFileToGenomeSpace}" immediate="true">
+                <f:param value="#{aFile.filename}" name="filename"/>
+                <f:param value="#{aFile.path}" name="dirname"/>
               </h:commandLink>
           	  </td>
           	</tr>
-          	   </h:outputText>
-          	 <!--  END GENOMESPACE ADDITION  -->
-        
+            </h:outputText>
           	
+        
+        
+          	<h:outputText rendered="#{not empty aFile.moduleInputParameters}">
+  		
           <tr>
             <td>
               <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
             </td>
           </tr>
+          </h:outputText>
           
-          <t:dataList value="#{fileInfo.moduleInputParameters}" var="p">
+           <t:dataList value="#{aFile.moduleInputParameters}" var="p">
             <tr>
               <td>
-               <h:outputLink value="#" onclick="setInputField('#{p.key}', '#{fileInfo.url}');">
+               <h:outputLink value="#" onclick="setInputField('#{p.key}', '#{aFile.genePatternUrl}');">
                	 <h:outputText>Send to #{p.value}</h:outputText>
                </h:outputLink>
               </td>
             </tr>
           </t:dataList>
-          <h:outputText rendered="#{!empty fileInfo.moduleInputParameters}">
-          	<tr>
-            	<td>
-              	<img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-            	</td>
-          	</tr>
-          </h:outputText>
-          
-          <t:dataList value="#{fileInfo.moduleMenuItems}" var="moduleMenuItem">
+  			
+  		<h:outputText rendered="#{not empty aFile.moduleMenuItems}">
+  		<tr>
+            <td>
+              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+            </td>
+          </tr>
+        </h:outputText>	
+          <t:dataList value="#{aFile.moduleMenuItems}" var="moduleMenuItem">
             <tr>
               <td>
                 <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
-                  <f:param value="#{fileInfo.jobNumber}" name="jobNumber"/>
-                  <f:param value="#{fileInfo.name}" name="name"/>
+                  <f:param value="UploadedFiles" name="source"/>
+                  <f:param value="${aFile.filename}" name="name"/>
+                  <f:param value="#{aFile.path}" name="path"/>
+                  <f:param value="#{aFile.path}" name="dirname"/>
                 </h:commandLink>
               </td>
             </tr>
             
           </t:dataList>
+
+
         </tbody>
       </table>
     </div>

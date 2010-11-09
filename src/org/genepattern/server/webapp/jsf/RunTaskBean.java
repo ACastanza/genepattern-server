@@ -29,6 +29,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceBean;
+import org.genepattern.server.webapp.uploads.UploadedFilesBean;
+
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -221,9 +224,19 @@ public class RunTaskBean {
 
     public void setTask(String taskNameOrLsid) {
 	JobBean jobBean = (JobBean) UIBeanHelper.getManagedBean("#{jobsBean}");
+	
+	GenomeSpaceBean gsb = (GenomeSpaceBean)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+	UploadedFilesBean ufb = (UploadedFilesBean)UIBeanHelper.getManagedBean("#{uploadedFilesBean}");
+	
 	if (jobBean != null) {
 	    jobBean.setSelectedModule(taskNameOrLsid);
+	} if (gsb != null){
+		gsb.setSelectedModule(taskNameOrLsid);
+	} if (ufb != null){
+		ufb.setSelectedModule(taskNameOrLsid);
 	}
+	
+	
 	TaskInfo taskInfo = null;
 	try {
 	    taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(taskNameOrLsid);
@@ -243,23 +256,95 @@ public class RunTaskBean {
     // attributes matchJob and outputFileName are set when selecting a module from an output file.
 	String matchJob = (String) UIBeanHelper.getRequest().getAttribute("matchJob");
 	String matchOutputFileParameterName = (String) UIBeanHelper.getRequest().getAttribute("outputFileName");
+	String matchOutputFileSource = (String) UIBeanHelper.getRequest().getAttribute("outputFileSource");
+	if (matchOutputFileSource == null) matchOutputFileSource = "GenePattern";
+	String matchOutputFileDirName = (String) UIBeanHelper.getRequest().getAttribute("outputFileDirName");
 
+	String gsUrl = null;
+	if ((gsb != null) && ("GENOMESPACE".equalsIgnoreCase(matchOutputFileSource))){
+		gsUrl = gsb.getFileURL(matchOutputFileDirName, matchOutputFileParameterName);
+	} 
+	String prevUploadedFileUrl = null;
+	if ((ufb != null) && ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource))){
+		prevUploadedFileUrl = ufb.getGenePatternFileURL(matchOutputFileDirName, matchOutputFileParameterName);
+	}
 	Map<String, String> reloadValues = new HashMap<String, String>();
-	if (matchJob != null) {
+
+	
+	if (matchOutputFileSource.equalsIgnoreCase("genomespace")){
+		 Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
+		    if (taskParameters != null) {
+		    	int idx = matchOutputFileParameterName.lastIndexOf(".");
+			    String gsType = matchOutputFileParameterName.substring(idx+1);
+			    System.out.println("GS File is a " + gsType);
+			
+			    for (ParameterInfo p : taskParameters) {
+			    	if (p.isInputFile()) {
+			    		List<String> fileFormats = SemanticUtil.getFileFormats(p);
+				   
+			    		for (String format: fileFormats){
+			    			System.out.println("format " + format);
+			    			if (format.equalsIgnoreCase(gsType)){
+			    				reloadValues.put(p.getName(), gsUrl);
+			    				break;
+			    			}
+			    		}
+				    
+			    		
+				    
+			    		
+			    	}
+			    }
+		    } 
+		   
+		   
+	 }
+	
+	if (matchOutputFileSource.equalsIgnoreCase("uploadedfiles")){
+		 Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
+		    if (taskParameters != null) {
+		    	int idx = matchOutputFileParameterName.lastIndexOf(".");
+			    String gsType = matchOutputFileParameterName.substring(idx+1);
+			    System.out.println("uploaded File is a " + gsType);
+			
+			    for (ParameterInfo p : taskParameters) {
+			    	if (p.isInputFile()) {
+			    		List<String> fileFormats = SemanticUtil.getFileFormats(p);
+				   
+			    		for (String format: fileFormats){
+			    			System.out.println("format " + format);
+			    			if (format.equalsIgnoreCase(gsType)){
+			    				reloadValues.put(p.getName(), prevUploadedFileUrl);
+			    				break;
+			    			}
+			    		}
+				    
+			    		
+				    
+			    		
+			    	}
+			    }
+		    } 
+		   
+		   
+	 }
+	
+	
+	if ((matchJob != null)) {
 	    Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
 	    if (taskParameters != null) {
 		for (ParameterInfo p : taskParameters) {
 		    if (p.isInputFile()) {
-			List<String> fileFormats = SemanticUtil.getFileFormats(p);
-			for (String format : fileFormats) {
-			    List<String> inputParameterNames = kindToInputParameters.get(p.getName());
-			    if (inputParameterNames == null) {
-				inputParameterNames = new ArrayList<String>();
-				kindToInputParameters.put(format, inputParameterNames);
-			    }
-			    inputParameterNames.add(p.getName());
-
-			}
+				List<String> fileFormats = SemanticUtil.getFileFormats(p);
+				for (String format : fileFormats) {
+				    List<String> inputParameterNames = kindToInputParameters.get(p.getName());
+				    if (inputParameterNames == null) {
+				    	inputParameterNames = new ArrayList<String>();
+				    	kindToInputParameters.put(format, inputParameterNames);
+				    }
+				    inputParameterNames.add(p.getName());
+				    
+				}
 		    }
 		}
 	    }
@@ -297,19 +382,18 @@ public class RunTaskBean {
 				    // than one input parameter
 				    String inputParameterName = inputParameterNames.get(0);
 
-				    if (!reloadValues.containsKey(inputParameterName)) {
-					String value = outputParameter.getValue();
-					if (value.endsWith(GPConstants.TASKLOG)
-						|| value.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING))
-					    break;
-
-					int index = StringUtils.lastIndexOfFileSeparator(value);
-					String jobNumber = value.substring(0, index);
-					String filename = value.substring(index + 1);
-
-                    //reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + UIBeanHelper.encode(filename));
-                    reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + filename);
-				    }
+					    if (!reloadValues.containsKey(inputParameterName)) {
+						String value = outputParameter.getValue();
+						if (value.endsWith(GPConstants.TASKLOG) || value.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING))    break;
+	
+						int index = StringUtils.lastIndexOfFileSeparator(value);
+						String jobNumber = value.substring(0, index);
+						String filename = value.substring(index + 1);
+	
+	                    //reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + UIBeanHelper.encode(filename));
+							reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + filename);
+						
+					   }
 
 				}
 			    }
@@ -381,9 +465,11 @@ public class RunTaskBean {
 	if (taskParameters != null) {
 	    for (int i = 0; i < taskParameters.length; i++) {
 		String defaultValue = reloadValues.get(taskParameters[i].getName());
+
 		if (defaultValue == null) {
 		    defaultValue = UIBeanHelper.getRequest().getParameter(taskParameters[i].getName());
 		}
+		
 		// if defaultValue is null default value will be set in
 		// Parameter constructor
 		parameters[i] = new Parameter(taskParameters[i], defaultValue);

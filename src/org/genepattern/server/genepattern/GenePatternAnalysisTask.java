@@ -123,6 +123,7 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.AnalysisServiceException;
+import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
@@ -415,6 +416,9 @@ public class GenePatternAnalysisTask {
                 log.error("Error", e);
             }
             String filename = params.substring(idx2 + 5, endIdx2);
+            
+            System.out.println("\n\t\tgetFile.jsp filename is " + filename);
+            
             if (filename == null) {
                 return null;
             }
@@ -442,6 +446,7 @@ public class GenePatternAnalysisTask {
                 }
             }
             if (lsid == null || lsid.trim().equals("")) { 
+            	
                 // input file look in temp for pipelines run without saving
                 File in = new File(System.getProperty("java.io.tmpdir"), filename);
                 if (in.exists() && jobNumber >= 0) {
@@ -452,6 +457,9 @@ public class GenePatternAnalysisTask {
                         return in;
                     }
                     throw new IllegalArgumentException("You are not permitted to access the requested file: "+in.getName());
+                } else if (in.exists()) {
+                	InputFilePermissionsHelper perm = new InputFilePermissionsHelper(userId, filename);
+                	if (perm.isCanRead()) return in; 
                 }
                 //special case: Axis
                 in = new File(System.getProperty("soap.attachment.dir"), filename);

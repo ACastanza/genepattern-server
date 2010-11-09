@@ -16,7 +16,8 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk"
-      xmlns:c="http://java.sun.com/jstl/core">
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:rich="http://richfaces.org/rich">
   <ui:composition template="/templates/common.xhtml">
     <ui:define name="headText">
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
@@ -242,10 +243,75 @@ function showFileInput(id) {
     </ui:define>
 
     <ui:define name="rightPanel">
-
-      <td width="203" valign="top" class="recentjobs" id="recentjobs">
-        <ui:include src="recentJobs.xhtml"/>
+	<td width="203" valign="top" class="recentjobs" id="recentjobs">
+	      
+		     <style>
+			    .rich-tabpanel-content {
+			        border-width: 1px 1px 1px 1px;
+			        border-color: #dfdfb9;
+			        background-color: #ebebce;
+			    }
+			    .rich-panel-header {
+    				 background-image:none;
+    				 background-color:transparent;
+				}
+			    
+			    .rich-tab-inactive {
+			     	background-color: #dfdfb9;
+			     	cursor: pointer;
+			     	font-weight: bold;
+					font-size: 11px;
+					line-height: 15px;
+					color: #666633;
+					text-decoration: none;
+					background-image: none;
+					 border-color: #dfdfb9;
+			    }
+			    .rich-tab-active {
+			     	background-color: #ebebce;
+			     	font-weight: bold;
+					font-size: 11px;
+					line-height: 15px;
+					color: #666633;
+					text-decoration: none;
+					background-image: none;
+					 border-color: #dfdfb9;
+			    }
+			    </style>
+		   		<h:outputText rendered="#{not genomeSpaceBean.loggedIn}">
+		   		<rich:tabPanel >
+		  			<rich:tab label="Recent Jobs" >
+             			<ui:include src="recentJobs.xhtml"/>
+        			</rich:tab>
+       		 		 <rich:tab label="Uploads">
+            			<ui:include src="uploads/uploadedFiles.xhtml"/>
+       				 </rich:tab>
+           		</rich:tabPanel>
+		   		 </h:outputText>
+		   		<h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+		   			
+		  		<rich:tabPanel switchType="ajax">
+		  			<rich:tab label="Recent Jobs" >
+             			<ui:include src="recentJobs.xhtml"/>
+        			</rich:tab>
+        
+       		 		 <rich:tab label="Uploads">
+            			<ui:include src="uploads/uploadedFiles.xhtml"/>
+       				 </rich:tab>
+           			 <rich:tab >
+           			 	 <f:facet name="label">
+            				<img style="vertical-align:middle" src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0"/>Genome Space
+     					 </f:facet>
+            			<ui:include src="genomespace/genomespaceFiles.xhtml"/>
+       				 </rich:tab>
+				
+		   	
+		   		</rich:tabPanel>
+		  		</h:outputText>
+	     
       </td>
+      
+      
     </ui:define>
 
     <ui:define name="body">

@@ -44,6 +44,9 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceBean;
+import org.genepattern.server.webapp.uploads.UploadedFilesBean;
+
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -239,6 +242,12 @@ public class JobBean {
 		UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
 	UIBeanHelper.getRequest().setAttribute("outputFileName",
 		UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("name")));
+	UIBeanHelper.getRequest().setAttribute("outputFileDirName",
+			UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("dirname")));
+	UIBeanHelper.getRequest().setAttribute("outputFileSource",
+			UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("source")));
+		
+	
 	RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
 	assert runTaskBean != null;
 	runTaskBean.setTask(lsid);
@@ -1022,6 +1031,8 @@ public class JobBean {
     }
 
     public void setSelectedModule(String selectedModule) {
+    	
+      	
 	List<JobResultsWrapper> recentJobs = getRecentJobs();
 	if (selectedModule == null || recentJobs == null || recentJobs.size() == 0) {
 	    return;
@@ -1074,7 +1085,7 @@ public class JobBean {
 		inputParameterNames.addAll(unannotatedParameters);
 	    }
 	}
-
+		
 	for (JobResultsWrapper job : recentJobs) {
 	    List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
 	    if (outputFiles != null) {
