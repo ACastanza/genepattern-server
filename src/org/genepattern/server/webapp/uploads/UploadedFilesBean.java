@@ -206,7 +206,7 @@ public class UploadedFilesBean {
 	    	final String userId = UIBeanHelper.getUserId();
 	    
 			// TODO Auto-generated method stub
-			return name.startsWith(userId);
+			return name.startsWith(userId+"_");
 		}};
   
     public List<UploadDirectory> availableDirectories;
