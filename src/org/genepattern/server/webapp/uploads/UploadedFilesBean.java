@@ -51,11 +51,9 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
-import org.genomespace.client.AuthorizationException;
-import org.genomespace.client.GsFile;
+
 import org.genomespace.client.User;
 import org.genomespace.client.GsSession;
-import org.genomespace.client.InternalServerException;
 import org.genomespace.client.User;
 
 /**

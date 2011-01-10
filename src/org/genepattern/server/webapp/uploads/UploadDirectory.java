@@ -13,7 +13,7 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.TaskInfo;
-import org.genomespace.client.GsFile;
+
 
 public class UploadDirectory {
 	private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
