@@ -14,63 +14,58 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.TaskInfo;
 
-
 public class UploadDirectory {
-	private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
+    private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
 
-	public String name;
-	public List<UploadFileInfo> uploadFiles;
-	public boolean expanded=true;
-	public int level=0;
-	
-	public UploadDirectory(String nom){
-		this.name = nom;
-	}
+    public String name;
+    public List<UploadFileInfo> uploadFiles;
+    public boolean expanded = true;
+    public int level = 0;
 
-	public String getName() {
-		return name;
-	}
+    public UploadDirectory(String nom) {
+        this.name = nom;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public List<UploadFileInfo> getUploadFiles() {
-		if (uploadFiles == null) uploadFiles = new ArrayList<UploadFileInfo>();
-		return uploadFiles;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setUploadFiles(List<UploadFileInfo> uploadFiles) {
-		this.uploadFiles = uploadFiles;
-	
-	}
+    public List<UploadFileInfo> getUploadFiles() {
+        if (uploadFiles == null)
+            uploadFiles = new ArrayList<UploadFileInfo>();
+        return uploadFiles;
+    }
 
-	
+    public void setUploadFiles(List<UploadFileInfo> uploadFiles) {
+        this.uploadFiles = uploadFiles;
 
-	public boolean isExpanded() {
-		return expanded;
-	}
+    }
 
-	public void setExpanded(boolean expanded) {
-		this.expanded = expanded;
-	}
+    public boolean isExpanded() {
+        return expanded;
+    }
 
-	public int getLevel() {
-		return level;
-	}
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
 
-	public void setLevel(int level) {
-		this.level = level;
-	}
-	
+    public int getLevel() {
+        return level;
+    }
 
-	private static class KeyValueComparator implements Comparator<KeyValuePair> {
+    public void setLevel(int level) {
+        this.level = level;
+    }
 
-		public int compare(KeyValuePair o1, KeyValuePair o2) {
-		    return o1.getKey().compareToIgnoreCase(o2.getKey());
-		}
+    private static class KeyValueComparator implements Comparator<KeyValuePair> {
 
-	    }
+        public int compare(KeyValuePair o1, KeyValuePair o2) {
+            return o1.getKey().compareToIgnoreCase(o2.getKey());
+        }
+
+    }
 }
-
-
