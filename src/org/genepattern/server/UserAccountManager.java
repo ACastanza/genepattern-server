@@ -187,6 +187,10 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't contain a semicolon (';') character.");
         }
+        if (username.startsWith(".")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't start with the dot ('.') character.");
+        }
     }
 
     /**
@@ -261,7 +265,7 @@ public class UserAccountManager {
      * @return
      * @throws AuthenticationException
      */
-    public boolean authenticateUser(String username, byte[] password) throws AuthenticationException {
+    public boolean authenticateUser(final String username, final byte[] password) throws AuthenticationException {
         if (username == null) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "Missing required parmameter: username");
         }
@@ -293,6 +297,7 @@ public class UserAccountManager {
         if (java.util.Arrays.equals(encryptedPassword, user.getPassword())) {
             return true;
         }
+        
         throw new AuthenticationException(AuthenticationException.Type.INVALID_CREDENTIALS, "Incorrect password for user '"+username+"'");
     }
 
