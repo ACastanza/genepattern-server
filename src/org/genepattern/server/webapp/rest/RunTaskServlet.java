@@ -610,18 +610,6 @@ public class RunTaskServlet extends HttpServlet
             }
             result.addChild("jobId", jobId);
 
-            /*try {
-                int jobNumber = Integer.parseInt(jobId);
-                String launchUrl = JobInfoManager.generateLaunchURL(taskInfo, jobNumber);
-
-                result.addChild("launchUrl", launchUrl);
-            }
-            catch (Exception e) {
-                log.error(e);
-                throw new Exception("Could not generate launch url found for Javascript visualizer: " + taskInfo.getName()
-                + e.getMessage());
-            }*/
-
             int gpJobNo = Integer.parseInt(jobId);
             //check if there was a comment specified for job and add it to database
             if(jobSubmitInfo.getComment() != null && jobSubmitInfo.getComment().length() > 0)
