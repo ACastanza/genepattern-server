@@ -1,6 +1,5 @@
 package org.genepattern.server.genepattern;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,9 +18,8 @@ public class QueryStringBuilder {
      * add a 'field-only' param to the queryString
      * @param name, the un-encoded field name
      * @return
-     * @throws UnsupportedEncodingException
      */
-    public QueryStringBuilder param(final String name) throws UnsupportedEncodingException {
+    public QueryStringBuilder param(final String name) {
         return param(name, null);
     }
     
@@ -30,9 +28,9 @@ public class QueryStringBuilder {
      * @param name, the un-encoded field name
      * @param value, the un-encoded value
      * @return
-     * @throws UnsupportedEncodingException
+     * @throws IllegalArgumentException if name==null
      */
-    public QueryStringBuilder param(final String name, final String value) throws UnsupportedEncodingException {
+    public QueryStringBuilder param(final String name, final String value) {
         if (name==null) {
             // name must not be null
             throw new IllegalArgumentException("name==null");

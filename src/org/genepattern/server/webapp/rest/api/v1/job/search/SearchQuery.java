@@ -3,8 +3,6 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.rest.api.v1.job.search;
 
-import java.io.UnsupportedEncodingException;
-
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.GpConfig;
 import org.genepattern.server.config.GpContext;
@@ -163,17 +161,11 @@ public class SearchQuery {
         PageLink pageLink=new PageLink(toPage);
         pageLink.rel=rel;
         pageLink.name=name;
-        try {
-            final String queryString=getQueryString(toPage);
-            if (queryString!=null) {
-                pageLink.href=jobsResourcePath+"?"+queryString;
-            }
-            else {
-                pageLink.href=jobsResourcePath;
-            }
+        final String queryString=getQueryString(toPage);
+        if (queryString!=null) {
+            pageLink.href=jobsResourcePath+"?"+queryString;
         }
-        catch (UnsupportedEncodingException e) {
-            log.error("Error creating link toPage="+toPage, e);
+        else {
             pageLink.href=jobsResourcePath;
         }
         return pageLink;
@@ -185,7 +177,7 @@ public class SearchQuery {
      * </pre>
      * @return the http query string for the search.
      */
-    private String getQueryString(int toPage)  throws UnsupportedEncodingException {
+    private String getQueryString(int toPage) {
         QueryStringBuilder b=new QueryStringBuilder();
         if (userId != null)  { b.param(Q_USER_ID, userId); }
         if (groupId != null) { b.param(Q_GROUP_ID, groupId); }

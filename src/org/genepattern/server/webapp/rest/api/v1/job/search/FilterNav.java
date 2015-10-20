@@ -6,7 +6,6 @@ package org.genepattern.server.webapp.rest.api.v1.job.search;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.genepattern.GpQueryParam;
 import org.genepattern.server.webapp.rest.api.v1.Rel;
@@ -26,8 +25,6 @@ import com.google.common.collect.ImmutableList;
  *
  */
 public class FilterNav {
-    private static final Logger log = Logger.getLogger(FilterNav.class);
-
     private final List<String> groupIds;
     private final List<String> batchIds;
     private final List<QueryLink> filterLinks;
@@ -39,37 +36,32 @@ public class FilterNav {
     }
     
     private List<QueryLink> initFilterLinks(final SearchQuery q) {
-        List<QueryLink> filters=new ArrayList<QueryLink>();
-        try {
-            // first item is 'My job results'
-            filters.add(new QueryLink(q, "My job results", Rel.related, 
-                    new GpQueryParam(SearchQuery.Q_USER_ID, q.getCurrentUser())));
-            // next item is 'All job results'
-            filters.add(new QueryLink(q, "All job results", Rel.related, 
-                    new GpQueryParam(SearchQuery.Q_USER_ID, "*")));
+        final List<QueryLink> filters=new ArrayList<QueryLink>();
+        // first item is 'My job results'
+        filters.add(new QueryLink(q, "My job results", Rel.related, 
+                new GpQueryParam(SearchQuery.Q_USER_ID, q.getCurrentUser())));
+        // next item is 'All job results'
+        filters.add(new QueryLink(q, "All job results", Rel.related, 
+                new GpQueryParam(SearchQuery.Q_USER_ID, "*")));
 
-            //add groups, if necessary
-            for(final String groupId : groupIds) {
-                if (groupId.endsWith(GroupPermission.PUBLIC)) {
-                    // special-case for 'Public job results' 
-                    filters.add(new QueryLink(q, "Public job results", Rel.related, 
-                            new GpQueryParam(SearchQuery.Q_GROUP_ID, GroupPermission.PUBLIC))); // "*"
-                }
-                else {
-                    filters.add(new QueryLink(q, "In group: "+groupId, Rel.related, 
-                            new GpQueryParam(SearchQuery.Q_GROUP_ID, groupId)));
-                }
+        //add groups, if necessary
+        for(final String groupId : groupIds) {
+            if (groupId.endsWith(GroupPermission.PUBLIC)) {
+                // special-case for 'Public job results' 
+                filters.add(new QueryLink(q, "Public job results", Rel.related, 
+                        new GpQueryParam(SearchQuery.Q_GROUP_ID, GroupPermission.PUBLIC))); // "*"
             }
-
-            // add batch jobs, if necessary
-            for(final String batchId : batchIds) {
-                filters.add(new QueryLink(q, "Batch: "+batchId, Rel.related, 
-                        new GpQueryParam(SearchQuery.Q_BATCH_ID, batchId)));
-
+            else {
+                filters.add(new QueryLink(q, "In group: "+groupId, Rel.related, 
+                        new GpQueryParam(SearchQuery.Q_GROUP_ID, groupId)));
             }
         }
-        catch (Throwable t) {
-            log.error("Unexpected error initializing filterLinks", t);
+
+        // add batch jobs, if necessary
+        for(final String batchId : batchIds) {
+            filters.add(new QueryLink(q, "Batch: "+batchId, Rel.related, 
+                    new GpQueryParam(SearchQuery.Q_BATCH_ID, batchId)));
+
         }
         return filters;
     }

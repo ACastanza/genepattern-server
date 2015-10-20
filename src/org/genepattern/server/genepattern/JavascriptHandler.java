@@ -1,8 +1,8 @@
 package org.genepattern.server.genepattern;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,23 +19,16 @@ public class JavascriptHandler {
     public static final String LAUNCH_URL_FILE = ".launchUrl.txt";
 
 
-    protected static String buildQueryString(final Multimap<String,String> queryMap) throws UnsupportedEncodingException
-    {
-        QueryStringBuilder b=new QueryStringBuilder();
-
-        for (Map.Entry<String, String> entry : queryMap.entries())
-        {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            b.param(key, value);
+    protected static String buildQueryString(final Multimap<String,String> queryMap) {
+        final QueryStringBuilder b=new QueryStringBuilder();
+        for (Map.Entry<String, String> entry : queryMap.entries()) {
+            b.param(entry.getKey(), entry.getValue());
         }
-
         return b.build();
     }
 
 
-    public static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap) throws Exception
+    public static String generateLaunchUrl(final GpConfig gpConfig, final TaskInfo taskInfo, final Map<String, List<String>> substitutedValuesMap)
     {
         if (gpConfig==null) {
             throw new IllegalArgumentException("gpConfig==null");
@@ -62,7 +55,7 @@ public class JavascriptHandler {
         return launchUrl.toString();
     }
 
-    public static String saveLaunchUrl(GpConfig gpConfig, TaskInfo taskInfo, File outputDir,  Map<String, List<String>> substitutedValuesMap) throws Exception
+    public static String saveLaunchUrl(GpConfig gpConfig, TaskInfo taskInfo, File outputDir,  Map<String, List<String>> substitutedValuesMap) throws FileNotFoundException
     {
         final String launchUrl=generateLaunchUrl(gpConfig, taskInfo, substitutedValuesMap);
 
