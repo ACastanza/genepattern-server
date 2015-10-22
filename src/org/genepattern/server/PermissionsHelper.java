@@ -29,6 +29,7 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
  */
 public class PermissionsHelper implements Serializable {
     private final HibernateSessionManager mgr;
+    private final IGroupMembershipPlugin groupMembership;
     
     //the user viewing or editing the job
     private String currentUser = null;
@@ -56,25 +57,36 @@ public class PermissionsHelper implements Serializable {
     /** @deprecated pass in a valid Hibernate session */
     public PermissionsHelper(final boolean _isAdmin, final String _userId, final int _jobNo) {
         this(org.genepattern.server.database.HibernateUtil.instance(),
+                UserAccountManager.instance().getGroupMembership(),
                 _isAdmin, _userId, _jobNo);
     }
     
+    /** @deprecated pass in an IGroupMembership plugin */
     public PermissionsHelper(final HibernateSessionManager mgr, final boolean _isAdmin, final String _userId, final int _jobNo) {
+        this(mgr,
+                UserAccountManager.instance().getGroupMembership(),
+                _isAdmin, _userId, _jobNo);
+    }
+
+    public PermissionsHelper(final HibernateSessionManager mgr, final IGroupMembershipPlugin groupInfo, final boolean _isAdmin, final String _userId, final int _jobNo) {
         this.mgr=mgr;
+        this.groupMembership=groupInfo;
         AnalysisDAO ds = new AnalysisDAO(mgr);
         final int _rootJobNo = ds.getRootJobNumber(_jobNo);
         final String _rootJobOwner = ds.getJobOwner(_rootJobNo);
         init(_isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo, ds);
     }
     
-    /** @deprecated pass in a valid Hibernate session */
+    /** @deprecated pass in a valid Hibernate session and a valid IGroupMembershipPlugin */
     public PermissionsHelper(final boolean _isAdmin, final String _userId, final int _jobNo, final String _rootJobOwner, final int _rootJobNo) {
         this(org.genepattern.server.database.HibernateUtil.instance(), 
+             UserAccountManager.instance().getGroupMembership(), 
                 _isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo);
     }
 
-    public PermissionsHelper(final HibernateSessionManager mgr, final boolean _isAdmin, final String _userId, final int _jobNo, final String _rootJobOwner, final int _rootJobNo) {
+    public PermissionsHelper(final HibernateSessionManager mgr, final IGroupMembershipPlugin groupInfo, final boolean _isAdmin, final String _userId, final int _jobNo, final String _rootJobOwner, final int _rootJobNo) {
         this.mgr=mgr;
+        this.groupMembership=groupInfo;
         init(_isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo, (AnalysisDAO)null);
     }
     
@@ -92,13 +104,12 @@ public class PermissionsHelper implements Serializable {
         init(mgr, ds);
     }
     
-    private void init(HibernateSessionManager mgr, AnalysisDAO ds)  {
+    private void init(final HibernateSessionManager mgr, AnalysisDAO ds)  {
         if (ds == null) {
             ds = new AnalysisDAO(mgr);
         }
         Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobNo);
 
-        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
             if (GroupPermission.PUBLIC.equals(gp.getGroupId())) {
                 this.isPublic = true;
@@ -121,11 +132,11 @@ public class PermissionsHelper implements Serializable {
             }
         }
         
-        initJobResultPermissions(groupMembership, groupPermissions);
+        initJobResultPermissions(groupPermissions);
         initNonPublicPermissions();
     }
     
-    private void initJobResultPermissions(IGroupMembershipPlugin groupMembership, Set<GroupPermission> groupPermissions) {
+    private void initJobResultPermissions(final Set<GroupPermission> groupPermissions) {
         Set<String> groups = groupMembership.getGroups(currentUser);
         SortedSet<GroupPermission> sortedNoGroups = new TreeSet<GroupPermission>(groupPermissions);
         jobResultPermissionsNoGroups = new ArrayList<GroupPermission>(sortedNoGroups);
