@@ -3,21 +3,32 @@
  *******************************************************************************/
 package org.genepattern.server;
 
+import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.database.HibernateSessionManager;
 import org.genepattern.server.database.HibernateUtil;
 
 /**
  * Factory method(s) for initializing JobPermissions flags for a given user for a given job.
  */
 public class JobPermissionsFactory {
+
+    /** @deprecated should pass in a DB session and GroupMembership */
     public static final JobPermissions createJobPermissionsFromDb(final boolean isAdmin, final String userId, final int jobNumber) {
-        final boolean isInTransaction=HibernateUtil.isInTransaction();
+        return createJobPermissionsFromDb(
+                HibernateUtil.instance(),
+                UserAccountManager.instance().getGroupMembership(),
+                isAdmin, userId, jobNumber);
+    }
+
+    public static final JobPermissions createJobPermissionsFromDb(final HibernateSessionManager mgr, final IGroupMembershipPlugin groupInfo, final boolean isAdmin, final String userId, final int jobNumber) {
+        final boolean isInTransaction=mgr.isInTransaction();
         try {
-            PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
+            PermissionsHelper perm = new PermissionsHelper(mgr, groupInfo, isAdmin, userId, jobNumber);
             return toJobPermissions(perm);
         }
         finally {
             if (!isInTransaction) {
-                HibernateUtil.closeCurrentSession();
+                mgr.closeCurrentSession();
             }
         }
     }
@@ -27,7 +38,7 @@ public class JobPermissionsFactory {
      * @param ph
      * @return
      */
-    private static final JobPermissions toJobPermissions(final PermissionsHelper ph) {
+    public static final JobPermissions toJobPermissions(final PermissionsHelper ph) {
         return new JobPermissions.Builder()
             .canRead(ph.canReadJob())
             .canWrite(ph.canWriteJob())
