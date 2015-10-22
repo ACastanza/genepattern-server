@@ -23,6 +23,45 @@ import org.apache.log4j.Logger;
 public class UrlUtil {
     public static Logger log = Logger.getLogger(UrlUtil.class);
 
+    public static String getServletPath(final HttpServletRequest request) {
+        String rootPath=UrlUtil.getGpUrl(request);
+        if (!rootPath.endsWith("/")) {
+            rootPath += "/";
+        }
+        return rootPath;
+    }
+
+
+    /**
+     * Get the baseUrl of the GenePattern web application, including the trailing slash ('/').
+     * This method uses the client request rather than the GenePatternURL set in the config file.
+     * For example, when 
+     *     request.requestUrl=http://gpdev.broadinstitute.org/gp/rest/v1/jobs/67262
+     *     request.contextPath=/gp
+     *     request.servletPath=/rest
+     * then return
+     *     http://gpdev.broadinstitute.org/gp
+     * 
+     * @param req
+     * @return
+     */
+    public static String getBaseGpUrl(final HttpServletRequest req) {
+        if (log.isDebugEnabled()) {
+            final String rurl=req.getRequestURL().toString();
+            final String contextPath=req.getContextPath();
+            final URI uri=URI.create(rurl);
+            final URI contextUrl=uri.resolve(contextPath);
+            log.debug("contextUrl="+contextUrl);
+        }
+        final URI contextUrl = 
+                URI.create(req.getRequestURL().toString())
+                    .resolve(req.getContextPath());
+        if (log.isDebugEnabled()) {
+            log.debug("baseGpUrl=");
+        }
+        return contextUrl.toString();
+    }
+    
     /**
      * Helper method for getting the base GenePatternURL for a given request.
      * This method is based on the client request rather than the server configuration

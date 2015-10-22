@@ -5,10 +5,13 @@ package org.genepattern.server.config;
 
 import java.io.File;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobPermissions;
 import org.genepattern.server.JobPermissionsFactory;
 import org.genepattern.server.database.HibernateSessionManager;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.eula.LibdirLegacy;
 import org.genepattern.server.eula.LibdirStrategy;
 import org.genepattern.server.job.input.JobInput;
@@ -34,6 +37,8 @@ public class GpContext {
     private JobInput jobInput = null;
     private boolean isAdmin=false;
     private JobPermissions jobPermissions=null;
+    
+    private String baseGpUrl=null;
 
     public static GpContext createContextForUser(final String userId) {
         return createContextForUser(userId, false);
@@ -321,6 +326,9 @@ public class GpContext {
         return jobPermissions.canWriteJob();
     }
     
+    public String getBaseGpUrl() {
+        return baseGpUrl;
+    } 
     
     // Builder pattern
     public static final class Builder {
@@ -332,6 +340,7 @@ public class GpContext {
         private File taskLibDir=null;
         private JobInput jobInput=null;
         private JobPermissions jobPermissions=null;
+        private String baseGpUrl=null;
 
         public Builder userId(final String userId) {
             this.userId=userId;
@@ -365,6 +374,37 @@ public class GpContext {
             this.jobPermissions=jobPermissions;
             return this;
         }
+        
+        /**
+         * Initialize the baseGpUrl from an HttpServletRequest. Should be initialized for all
+         * web transactions, including REST API, SOAP API, and web client requests.
+         * 
+         * @param request
+         * @return
+         */
+        public Builder baseGpUrl(final HttpServletRequest request) {
+            baseGpUrl( UrlUtil.getBaseGpUrl(request) );
+            return this;
+        }
+
+        /**
+         * Set the baseGpUrl for the GenePattern web application. The baseGpUrl includes the servlet path and the initial trailing slash, e.g.
+         *     'http://127.0.0.1:8080/gp/'
+         *     'http://genepattern.broadinstitute.org/gp/'
+         * 
+         * @param baseGpUrl
+         * @return
+         */
+        public Builder baseGpUrl(final String baseGpUrl) {
+            this.baseGpUrl=baseGpUrl;
+            if (!this.baseGpUrl.endsWith(("/"))) {
+                if (log.isDebugEnabled()) {
+                    log.debug("appending trailing ('/') to baseGpUrl");
+                }
+                this.baseGpUrl += "/";
+            }
+            return this;
+        }
 
         public GpContext build() {
             GpContext gpContext=new GpContext();
@@ -390,6 +430,7 @@ public class GpContext {
             if (jobPermissions!=null) {
                 gpContext.setJobPermissions(jobPermissions);
             }
+            gpContext.baseGpUrl=this.baseGpUrl;
             return gpContext;
         }
     }
