@@ -63,22 +63,20 @@ public class GpContext {
         return createContextForJob(org.genepattern.server.database.HibernateUtil.instance(), jobNumber);
     }
     
+    /** @deprecated  should use JobContextBuilder when it is ready for production */
     public static GpContext createContextForJob(final HibernateSessionManager mgr, final Integer jobNumber) throws Exception, Throwable {
-        //null arg for currentUser means 'use the owner of the job'
-        return createContextForJob(mgr, null, jobNumber);
-    }
-    public static GpContext createContextForJob(final HibernateSessionManager mgr, final String currentUser, final Integer jobNumber) throws Exception, Throwable {
         LibdirStrategy libdirStrategy=new LibdirLegacy();
-        return createContextForJob(mgr, currentUser, jobNumber, libdirStrategy);
+        return createContextForJob(mgr, jobNumber, libdirStrategy);
     }
-    public static GpContext createContextForJob(final HibernateSessionManager mgr, final String currentUser, final Integer jobNumber, final LibdirStrategy libdirStrategy) throws Exception, Throwable {
+
+    /** @deprecated  should use JobContextBuilder when it is ready for production */
+    protected static GpContext createContextForJob(final HibernateSessionManager mgr, final Integer jobNumber, final LibdirStrategy libdirStrategy) throws Exception, Throwable {
         if (jobNumber==null) {
             throw new IllegalArgumentException("jobNumber==null");
         }
         if (libdirStrategy==null) {
             throw new IllegalArgumentException("libdirStrategy==null");
         }
-        final boolean initFromDb=true;
         final boolean isInTransaction=mgr.isInTransaction();
         final JobInfo jobInfo;
         final JobInput jobInput;
@@ -96,7 +94,7 @@ public class GpContext {
                 log.debug("taskName=" + taskName);
             }
             taskLibDir=libdirStrategy.getLibdir(taskInfo.getLsid());
-            return createContextForJob(currentUser, jobInfo, taskInfo, taskLibDir, jobInput, initFromDb);
+            return createContextForJob(jobInfo, taskInfo, taskLibDir, jobInput);
         }
         finally {
             if (!isInTransaction) {
@@ -105,7 +103,8 @@ public class GpContext {
         }
     }
 
-    private static GpContext createContextForJob(final String currentUser, final JobInfo jobInfo, final TaskInfo taskInfo, final File taskLibDir, final JobInput jobInput, final boolean initFromDb) {        
+    /** @deprecated  should use JobContextBuilder when it is ready for production */
+    private static GpContext createContextForJob(final JobInfo jobInfo, final TaskInfo taskInfo, final File taskLibDir, final JobInput jobInput) { 
         Builder builder=new Builder();
         if (jobInfo != null) {
             builder=builder.jobInfo(jobInfo);
@@ -121,22 +120,19 @@ public class GpContext {
         }
 
         final String userId;
-        if (currentUser==null && jobInfo!=null) {
+        if (jobInfo!=null) {
             userId=jobInfo.getUserId();
         }
         else {
-            userId=currentUser;
+            userId=null;
         }
         builder.userId(userId);
-        if (initFromDb) {
-            if (jobInfo != null && jobInfo.getUserId() != null) {
-                final boolean isAdmin = AuthorizationHelper.adminServer(userId);
-                builder = builder.isAdmin(isAdmin);
-                JobPermissions jobPermissions=JobPermissionsFactory.createJobPermissionsFromDb(isAdmin, userId, jobInfo.getJobNumber());
-                builder.jobPermissions(jobPermissions);
-            }
+        if (jobInfo != null && jobInfo.getUserId() != null) {
+            final boolean isAdmin = AuthorizationHelper.adminServer(userId);
+            builder = builder.isAdmin(isAdmin);
+            JobPermissions jobPermissions=JobPermissionsFactory.createJobPermissionsFromDb(isAdmin, userId, jobInfo.getJobNumber());
+            builder.jobPermissions(jobPermissions);
         }
-        
         return builder.build();
     }
     
@@ -314,6 +310,7 @@ public class GpContext {
     
     public boolean canReadJob() {
         if (jobPermissions==null) {
+            log.warn(new Exception("check for gpContext.canReadJob when jobPermissions not set"));
             return false;
         }
         return jobPermissions.canReadJob();
