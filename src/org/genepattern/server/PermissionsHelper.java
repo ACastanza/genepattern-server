@@ -266,7 +266,7 @@ public class PermissionsHelper implements Serializable {
         if (!canSetJobPermissions()) {
             throw new Exception("Insufficient permissions to change access permission for job: "+rootJobNo);
         }
-        AnalysisDAO ds = new AnalysisDAO();
+        AnalysisDAO ds = new AnalysisDAO(mgr);
         
         // need to reset the isShared property based on the new permissions
         ds.setGroupPermissions(rootJobNo, permissions);
