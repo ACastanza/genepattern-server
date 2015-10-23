@@ -38,13 +38,35 @@ import org.hibernate.Session;
 public class TaskInfoCache {
     private static Logger log = Logger.getLogger(TaskInfoCache.class);
     
+    private static HibernateSessionManager mgr=null;
+    
+    /** for junit tests, to avoid initializing a new DB session */
+    public static void setHibernateSessionManager(final HibernateSessionManager mgr) {
+        TaskInfoCache.mgr=mgr;
+    }
+
+    private static HibernateSessionManager getMgr() {
+        if (mgr != null) {
+            return mgr;
+        }
+        return org.genepattern.server.database.HibernateUtil.instance();
+    }
+    private static GpConfig gpConfig=null;
+    private static GpConfig getGpConfig() {
+        if (gpConfig != null) {
+            return gpConfig;
+        }
+        return ServerConfigurationFactory.instance();
+    }
+    
     public static TaskInfoCache instance() {
         return Singleton.taskInfoCache;
     }
+    
     private static class Singleton {
         final static TaskInfoCache taskInfoCache = new TaskInfoCache(
-                org.genepattern.server.database.HibernateUtil.instance(), 
-                ServerConfigurationFactory.instance(), 
+                getMgr(),
+                getGpConfig(),
                 GpContext.getServerContext()
         );
         private Singleton() {
