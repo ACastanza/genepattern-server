@@ -150,10 +150,8 @@ public class LSIDUtil {
     }
 
     public static boolean isSuiteLSID(String lsid) {
-
         try {
-            LSID anLsid = new LSID(lsid);
-            String nom = anLsid.getNamespace();
+            final LSID anLsid = new LSID(lsid);
             return isSuiteLSID(anLsid);
         } catch (Exception e) {
             e.printStackTrace();
