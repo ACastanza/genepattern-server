@@ -70,7 +70,7 @@ public class TestGroupAuth {
     @Test
     public void groupAuth_withAdminGroup() {
         groupAuth=new GroupAuth.Builder()
-            .withAdminGroup()
+            .withDefaultAdmin()
         .build();
         
         assertEquals("adminServer(testUser)",    false, groupAuth.adminServer(testUser));
@@ -134,9 +134,20 @@ public class TestGroupAuth {
     }
 
     @Test
-    public void checkPermission_withAdminGroup() {
+    public void checkPermission_adminServer() {
         groupAuth=new GroupAuth.Builder()
-            .withAdminGroup()
+            .withDefaultAdmin()
+        .build();
+
+        final String ADMIN_SERVER="adminServer";
+        assertEquals("checkPermission(adminServer, adminUser)", true, groupAuth.checkPermission(ADMIN_SERVER, adminUser));
+        assertEquals("checkPermission(adminServer, testUser)", false, groupAuth.checkPermission(ADMIN_SERVER, testUser));
+    }
+    
+    @Test
+    public void checkPermission_cornerCases() {
+        groupAuth=new GroupAuth.Builder()
+            .withDefaultAdmin()
         .build();
 
         assertEquals("null permissionName", false,
@@ -161,16 +172,13 @@ public class TestGroupAuth {
         assertEquals("empty userName", false,
                 groupAuth.checkPermission("adminJobs", ""));
 
-        assertEquals("adminJobs for adminUser", true, 
-                groupAuth.checkPermission("adminJobs", adminUser));
-        
     }
     
     
     @Test
     public void actionPermissionMap_withAdminGroup() {
         groupAuth=new GroupAuth.Builder()
-            .withAdminGroup()
+            .withDefaultAdmin()
         .build();
 
         assertEquals("isAllowed(sql.jsp, adminUser)", true, 

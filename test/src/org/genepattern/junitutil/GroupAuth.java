@@ -216,7 +216,7 @@ public final class GroupAuth implements IGroupMembershipPlugin, IAuthorizationMa
          * create a new builder, initialized with the default actionPermissions.
          */
         public Builder() {
-            withDefaultActionPermissions();
+            defaultActionPermissionMap();
         }
         
         /**
@@ -231,25 +231,36 @@ public final class GroupAuth implements IGroupMembershipPlugin, IAuthorizationMa
             // userGroups.xml
             group(ADMIN_GROUP_ID, ALL_USERS);
             // permissionMap.xml
-            withDefaultPermissions();
+            defaultPermissionMap();
             // actionPermissionMap.xml
-            withDefaultActionPermissions();
+            defaultActionPermissionMap();
             return this;
         }
 
         /**
-         * initialize permissions for a default server install; the 'admin' user is 
-         * in the administrators group.
-         * @return
+         * initialize permissions with the 'admin' user as the only member 
+         * of the 'administrators' group.
          */
-        public Builder withAdminGroup() {
-            return 
-                withDefaultPermissions()
-                .group(GroupAuth.ADMIN_GROUP_ID, "admin");
+        public Builder withDefaultAdmin() {
+            return withDefaultAdmin("admin");
         }
         
-        public Builder withDefaultPermissions() {
-            // permissionMap.xml
+        /**
+         * initialize permissions with the given adminUser as the only member 
+         * of the 'administrators' group.
+         * @param adminUser
+         * @return
+         */
+        public Builder withDefaultAdmin(final String adminUser) {
+            return defaultPermissionMap()
+            .group(GroupAuth.ADMIN_GROUP_ID, "admin");
+        }
+        
+        /**
+         * set permission to match default 'permissionMap.xml'
+         * @return
+         */
+        public Builder defaultPermissionMap() {
             permission(Permission.ADMIN_JOBS, ADMIN_GROUP_ID);
             permission(Permission.ADMIN_MODULES, ADMIN_GROUP_ID);
             permission(Permission.ADMIN_SUITES, ADMIN_GROUP_ID);
@@ -263,8 +274,11 @@ public final class GroupAuth implements IGroupMembershipPlugin, IAuthorizationMa
             return this;
         }
         
-        public Builder withDefaultActionPermissions() {
-            // actionPermissionMap.xml
+        /**
+         * set actionPermission to match the default 'actionPermissionMap.xml'.
+         * @return
+         */
+        public Builder defaultActionPermissionMap() {
             actionPermission("sql.jsp", Permission.ADMIN_SERVER);
             actionPermission("createReport.jsp", Permission.ADMIN_SERVER);
             actionPermission("requestReport.jsp", Permission.ADMIN_SERVER);
