@@ -8,6 +8,7 @@ import java.io.File;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.DbException;
 import org.genepattern.server.JobPermissions;
 import org.genepattern.server.JobPermissionsFactory;
 import org.genepattern.server.database.HibernateSessionManager;
@@ -130,8 +131,13 @@ public class GpContext {
         if (jobInfo != null && jobInfo.getUserId() != null) {
             final boolean isAdmin = AuthorizationHelper.adminServer(userId);
             builder = builder.isAdmin(isAdmin);
-            JobPermissions jobPermissions=JobPermissionsFactory.createJobPermissionsFromDb(isAdmin, userId, jobInfo.getJobNumber());
-            builder.jobPermissions(jobPermissions);
+            try {
+                JobPermissions jobPermissions=JobPermissionsFactory.createJobPermissionsFromDb(isAdmin, userId, jobInfo.getJobNumber());
+                builder.jobPermissions(jobPermissions);
+            }
+            catch (DbException e) {
+                //ignore, it's already logged 
+            }
         }
         return builder.build();
     }
